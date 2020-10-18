@@ -36,7 +36,7 @@ namespace PPM
             if (result == true)
             {
                 string filename = openFileDialog.FileName;
-                var info = PpmFileReader.ReadFile(filename);
+                var info = PpmFileReader.ReadFileInfo(filename);
                 fileContent.Text = info.ToString();
             }
         }

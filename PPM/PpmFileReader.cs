@@ -16,7 +16,7 @@ namespace PPM
             P3,
             P6,
         };
-        public static PpmFileInfo ReadFile(string filename)
+        public static PpmFileInfo ReadFileInfo(string filename)
         {
             int currentStep = 1;
             Size size = new Size(-1, -1);
@@ -99,6 +99,7 @@ namespace PPM
                                 size.Height = val;
                                 currentStep = 3;
                                 i += 1;
+                                valueAsStringBuilder.Clear();
                             }
                         }
                     }
@@ -110,21 +111,50 @@ namespace PPM
                 }
                 if (currentStep == 3)
                 {
-                    //for (; j < line.Length; j++)
-                    //{
-                    //    if (line[j] == commentStartChar)
-                    //    {
-                    //        //The rest of the line is a comment
-                    //        break;
-                    //    }
-                    //    else
-                    //    {
-
-                    //    }
-                    //}
+                    if (isComment)
+                    {
+                        if (text[i] == '\n'/* || text[i] == '\r\n'*/)
+                        {
+                            isComment = false;
+                        }
+                    }
+                    else if (text[i] == commentStartChar)
+                    {
+                        isComment = true;
+                    }
+                    else if (Char.IsDigit(text[i]))
+                    {
+                        valueAsStringBuilder.Append(text[i]);
+                    }
+                    else if (Char.IsWhiteSpace(text[i]))
+                    {
+                        if (valueAsStringBuilder.ToString() != String.Empty)
+                        {
+                            ushort val = ushort.Parse(valueAsStringBuilder.ToString());
+                            if (maximumColorValue == 0)
+                            {
+                                maximumColorValue = val;
+                                return new PpmFileInfo(ppmFileType, size, maximumColorValue);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new FileFormatException(
+                            String.Format("Found illegal character!\n Character index: {0}\n Character: {1}", i, text[i]));
+                    }
                 }
             }
-            return new PpmFileInfo(ppmFileType, size, maximumColorValue);
+            if (ppmFileType == PpmFileType.Invalid)
+                throw new FileFormatException("Could not find file type info");
+            if (size.Width == - 1)
+                throw new FileFormatException("Could not find image width info");
+            if (size.Height == -1)
+                throw new FileFormatException("Could not find image height info");
+            if (maximumColorValue == 0)
+                throw new FileFormatException("Could not find maximum color value info");
+            else
+                throw new FileFormatException("Invalid file format");
         }
     }
 }
