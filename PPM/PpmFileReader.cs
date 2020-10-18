@@ -23,108 +23,105 @@ namespace PPM
             ushort maximumColorValue = 0;
             PpmFileType ppmFileType = PpmFileType.Invalid;
 
-            char comment = '#';
-            string[] lines = System.IO.File.ReadAllLines(filename);
-            for (int i = 0; i < lines.Length; i++)
+            char commentStartChar = '#';
+            bool isComment = false;
+            string text = System.IO.File.ReadAllText(filename);
+            char fileType = 'P';
+            StringBuilder valueAsStringBuilder = new StringBuilder();
+            for (int i = 0; i < text.Length; i++)
             {
-                string line = (string)lines[i];
-                int j = 0;
                 if (currentStep == 1)
                 {
-                    char fileType = 'P';
-                    for (; j < line.Length; j++)
+                    if (isComment)
                     {
-                        if (line[j] == comment)
+                        if (text[i] == '\n'/* || text[i] == '\r\n'*/)
                         {
-                            //The rest of the line is a comment
-                            break;
+                            isComment = false;
                         }
-                        else if (line[j] == fileType)
+                    }
+                    else if (text[i] == commentStartChar)
+                    {
+                        isComment = true;
+                    }
+                    else if (text[i] == fileType)
+                    {
+                        if (i + 1 < text.Length)
                         {
-                            if (j + 1 < line.Length)
+                            if (text[i + 1] == '3')
                             {
-                                if (line[j + 1] == '3')
-                                {
-                                    ppmFileType = PpmFileType.P3;
-                                    currentStep = 2;
-                                    j += 2;
-                                    break;
-                                }
-                                else if (line[j + 1] == '6')
-                                {
-                                    ppmFileType = PpmFileType.P6;
-                                    currentStep = 2;
-                                    j += 2;
-                                    break;
-                                }
+                                ppmFileType = PpmFileType.P3;
+                                currentStep = 2;
+                                i += 2;
+                            }
+                            else if (text[i + 1] == '6')
+                            {
+                                ppmFileType = PpmFileType.P6;
+                                currentStep = 2;
+                                i += 2;
                             }
                         }
-                        else if (!Char.IsWhiteSpace(line[j]))
-                        {
-                            throw new FileFormatException(
-                                String.Format("Found illegal character!\n Line index: {0}\n Character index: {1}\n Character: {2}", i, j, line[j]));
-                        }
+                    }
+                    else if (!Char.IsWhiteSpace(text[i]))
+                    {
+                        throw new FileFormatException(
+                            String.Format("Found illegal character!\n Character index: {0}\n Character: {1}", i, text[i]));
                     }
                 }
                 if (currentStep == 2)
                 {
-                    StringBuilder valueAsStringBuilder = new StringBuilder();
-                    for (; j < line.Length; j++)
+                    if (isComment)
                     {
-                        if (line[j] == comment)
+                        if (text[i] == '\n'/* || text[i] == '\r\n'*/)
                         {
-                            //The rest of the line is a comment
-                            break;
+                            isComment = false;
                         }
-                        else if(Char.IsDigit(line[j]))
+                    }
+                    else if (text[i] == commentStartChar)
+                    {
+                        isComment = true;
+                    }
+                    else if (Char.IsDigit(text[i]))
+                    {
+                        valueAsStringBuilder.Append(text[i]);
+                    }
+                    else if (Char.IsWhiteSpace(text[i]))
+                    {
+                        if (valueAsStringBuilder.ToString() != String.Empty)
                         {
-                            valueAsStringBuilder.Append(line[j]);
-                            //
-                            //int multiplier = 1;
-                            //while(j + 1 < line.Length && Char.IsDigit(line[j + 1]))
-                            //{
-                            //    int.Parse()
-                            //}
-                        }
-                        else if (Char.IsWhiteSpace(line[j]))
-                        {
-                            if (valueAsStringBuilder.ToString() != String.Empty)
+                            int val = int.Parse(valueAsStringBuilder.ToString());
+                            if (size.Width == -1)
                             {
-                                int val = int.Parse(valueAsStringBuilder.ToString());
-                                if (size.Width == -1)
-                                {
-                                    size.Width = val;
-                                    valueAsStringBuilder.Clear();
-                                }
-                                else if (size.Height == -1)
-                                {
-                                    size.Height = val;
-                                    currentStep = 3;
-                                    break;
-                                }
+                                size.Width = val;
+                                valueAsStringBuilder.Clear();
+                            }
+                            else if (size.Height == -1)
+                            {
+                                size.Height = val;
+                                currentStep = 3;
+                                i += 1;
                             }
                         }
-                        else
-                        {
-                            throw new FileFormatException(
-                                String.Format("Found illegal character!\n Line index: {0}\n Character index: {1}\n Character: {2}", i, j, line[j]));
-                        }
+                    }
+                    else
+                    {
+                        throw new FileFormatException(
+                            String.Format("Found illegal character!\n Character index: {0}\n Character: {1}", i, text[i]));
                     }
                 }
                 if (currentStep == 3)
                 {
-                    for (; j < line.Length; j++)
-                    {
-                        if (line[j] == comment)
-                        {
-                            //The rest of the line is a comment
-                            break;
-                        }
-                        else
-                        {
+                    //for (; j < line.Length; j++)
+                    //{
+                    //    if (line[j] == commentStartChar)
+                    //    {
+                    //        //The rest of the line is a comment
+                    //        break;
+                    //    }
+                    //    else
+                    //    {
 
-                        }
-                    }
+                    //    }
+                    //}
                 }
             }
             return new PpmFileInfo(ppmFileType, size, maximumColorValue);
