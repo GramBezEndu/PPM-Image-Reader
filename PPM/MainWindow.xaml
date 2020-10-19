@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PPM"
         mc:Ignorable="d"
-        Title="PPM reader" Height="450" Width="800">
+        Title="PPM reader" Height="864" Width="1536">
     <Grid>
         <DockPanel Margin="10">
             <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
                 <Button Name="btnOpenFile" Click="btnOpenFile_Click">Open file</Button>
             </WrapPanel>
-            <TextBox Name="fileContent" />
+            <TextBox Name="fileContent" Width="184" />
+            <local:MyGame x:Name="img" Width="1280" Height="720" />
         </DockPanel>
     </Grid>
 </Window>

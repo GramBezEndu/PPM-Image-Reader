@@ -38,6 +38,7 @@ namespace PPM
                 string filename = openFileDialog.FileName;
                 var info = PpmFileReader.ReadFileInfo(filename);
                 fileContent.Text = info.ToString();
+                MyGame.Instance.SetTexture(info.CreateTexture());
             }
         }
     }
