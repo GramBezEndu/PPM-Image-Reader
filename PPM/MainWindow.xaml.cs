@@ -25,6 +25,7 @@ namespace PPM
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = MyGame.Instance.Camera;
         }
 
         private void btnOpenFile_Click(object sender, RoutedEventArgs e)

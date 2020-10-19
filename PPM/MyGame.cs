@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Framework.WpfInterop;
 using MonoGame.Framework.WpfInterop.Input;
 using System;
@@ -19,12 +20,18 @@ namespace PPM
                 return instance;
             }
         }
+        public Camera Camera { get; private set; } = new Camera();
         private static MyGame instance;
-        private SpriteBatch _spriteBatch;
+        private SpriteBatch spriteBatch;
         private IGraphicsDeviceService _graphicsDeviceManager;
-        private WpfKeyboard _keyboard;
-        private WpfMouse _mouse;
+        private WpfMouse mouse;
         private Texture2D texture;
+        private Vector2 texturePos = Vector2.Zero;
+
+        private MouseState previousMouseState;
+        private MouseState mouseState;
+        public int PreviousScrollWheelValue { get; private set; }
+        public int ScrollWheelValue { get; private set; }
 
         public MyGame()
         {
@@ -40,12 +47,11 @@ namespace PPM
 
             // wpf and keyboard need reference to the host control in order to receive input
             // this means every WpfGame control will have it's own keyboard & mouse manager which will only react if the mouse is in the control
-            _keyboard = new WpfKeyboard(this);
-            _mouse = new WpfMouse(this);
+            mouse = new WpfMouse(this);
 
             // must be called after the WpfGraphicsDeviceService instance was created
             base.Initialize();
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // content loading now possible
         }
@@ -53,23 +59,46 @@ namespace PPM
         protected override void Update(GameTime time)
         {
             // every update we can now query the keyboard & mouse for our WpfGame
-            var mouseState = _mouse.GetState();
-            var keyboardState = _keyboard.GetState();
+            previousMouseState = mouseState;
+            mouseState = mouse.GetState();
+            PreviousScrollWheelValue = ScrollWheelValue;
+            ScrollWheelValue = mouseState.ScrollWheelValue;
+            if (texture != null)
+            {
+                if (MouseScrolledDown())
+                    Camera.Zoom += 0.1f;
+                else if (MouseScrolledUp())
+                    Camera.Zoom -= 0.1f;
+            }
+            Camera.Update(time);
         }
 
         protected override void Draw(GameTime time)
         {
             base.Draw(time);
-            GraphicsDevice.Clear(Color.AliceBlue);
-            _spriteBatch.Begin();
+            GraphicsDevice.Clear(Color.GhostWhite);
+            spriteBatch.Begin(transformMatrix: Camera.ViewMatrix);
             if (texture != null)
-                _spriteBatch.Draw(texture, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
-            _spriteBatch.End();
+                spriteBatch.Draw(texture, texturePos, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+            spriteBatch.End();
         }
 
         public void SetTexture(Texture2D texture)
         {
             this.texture = texture;
+            texturePos = new Vector2((float)(this.ActualWidth / 2 - texture.Width / 2), (float)(this.ActualHeight / 2 - texture.Height / 2));
+            Camera.Position = texturePos;
+            //camera.Origin = new Vector2((float)(ActualWidth/*texture.Width*/ / 2), (float)(ActualHeight/*texture.Height*/ / 2));
+            //camera.Zoom = 0.5f;
+        }
+        public bool MouseScrolledUp()
+        {
+            return ScrollWheelValue < PreviousScrollWheelValue;
+        }
+
+        public bool MouseScrolledDown()
+        {
+            return ScrollWheelValue > PreviousScrollWheelValue;
         }
     }
 

@@ -11,8 +11,12 @@
             <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
                 <Button Name="btnOpenFile" Click="btnOpenFile_Click">Open file</Button>
             </WrapPanel>
-            <TextBox Name="fileContent" Width="184" />
-            <local:MyGame x:Name="img" Width="1280" Height="720" />
+            <WrapPanel Orientation="Vertical">
+                <TextBox Name="fileContent" Width="180" Height="300" IsReadOnly="True"/>
+                <Label Content="Zoom:"></Label>
+                <TextBox Name="zoom" Width="180" Height="30" IsReadOnly="True" Text="{Binding Zoom, UpdateSourceTrigger=PropertyChanged}"/>
+                <local:MyGame x:Name="img" Width="1280" Height="720" />
+            </WrapPanel>
         </DockPanel>
     </Grid>
 </Window>
