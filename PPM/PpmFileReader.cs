@@ -134,7 +134,7 @@ namespace PPM
                             if (maximumColorValue == 0)
                             {
                                 maximumColorValue = val;
-                                return new PpmFileInfo(ppmFileType, size, maximumColorValue, text, i);
+                                return new PpmFileInfo(ppmFileType, size, maximumColorValue, text, i, filename);
                             }
                         }
                     }

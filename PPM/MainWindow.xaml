@@ -10,11 +10,12 @@
         <DockPanel Margin="10">
             <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,0,0,10">
                 <Button Name="btnOpenFile" Click="btnOpenFile_Click">Open file</Button>
+                <Button Name="btnSaveFile" Click="btnSaveFile_Click">Save as JPG</Button>
             </WrapPanel>
             <WrapPanel Orientation="Vertical">
                 <TextBox Name="fileContent" Width="180" Height="300" IsReadOnly="True"/>
                 <Label Content="Zoom:"></Label>
-                <TextBox Name="zoom" Width="180" Height="30" IsReadOnly="True" Text="{Binding Zoom, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox Name="zoom" Width="180" Height="30" IsReadOnly="True" Text="{Binding Zoom}"/>
                 <local:MyGame x:Name="img" Width="1280" Height="720" />
             </WrapPanel>
         </DockPanel>
